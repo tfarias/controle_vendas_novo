@@ -1,7 +1,9 @@
 import axios from 'axios';
-
+import getConfig from "next/config";
+const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
+const apiUrl = serverRuntimeConfig.apiUrl || publicRuntimeConfig.apiUrl;
 const apiHost = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: apiUrl,
 });
 
 export default apiHost;
