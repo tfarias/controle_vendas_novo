@@ -44,6 +44,7 @@ services:
   tray_front:
     container_name: next-tray
     build: ./front
+    entrypoint: docker/entrypoint.sh
     restart: always
     ports:
       - "3001:5000"
