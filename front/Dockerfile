@@ -6,6 +6,8 @@ WORKDIR /home/node/app
 
 COPY . .
 
+RUN npm install
+
 USER node
 
 EXPOSE 5000
