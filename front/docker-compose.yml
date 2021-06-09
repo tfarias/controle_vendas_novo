@@ -1,0 +1,11 @@
+version: "3"
+services:
+  next-tray:
+    container_name: next-tray
+    build: .
+    entrypoint: ./docker/entrypoint.sh
+    restart: always
+    ports:
+      - "3001:5000"
+    volumes:
+      - .:/home/node/app

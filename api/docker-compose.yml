@@ -1,0 +1,50 @@
+version: "3"
+services:
+  tray_api:
+    build: .
+    container_name: tray_api
+    volumes:
+      - ./:/var/www
+    networks:
+      - network_tray
+
+  tray_server:
+    build: ./.docker/nginx
+    container_name: tray_server
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - tray_api
+    networks:
+      - network_tray
+
+  tray_db:
+    image: mysql:5.7.22
+    container_name: tray_db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - tray_volume:/var/lib/mysql/
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - network_tray
+
+networks:
+  network_tray:
+    driver: bridge
+
+volumes:
+  tray_volume:
+    driver: local
+

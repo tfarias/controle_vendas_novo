@@ -1,0 +1,2 @@
+docker exec -d tray_api php artisan send:relatorio && docker exec -d tray_api php artisan queue:work
+
