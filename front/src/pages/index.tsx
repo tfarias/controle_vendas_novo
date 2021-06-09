@@ -1,20 +1,33 @@
-import Head from "next/head";
-import Layout from "../components/layout";
-import { Table, Row, Button } from "react-bootstrap";
-import api from "../services/api";
-import { Venda } from "../interfaces/venda";
-import { Pagination } from "../interfaces/pagination";
-import { GetServerSideProps } from "next";
-import { AxiosError } from "axios";
-import { toast } from "react-toastify";
-import Pages from "../components/pagination";
+import Head from 'next/head';
+import Layout from '../components/layout';
+import { Table, Row } from 'react-bootstrap';
+import { Venda } from '../interfaces/venda';
+import { Pagination } from '../interfaces/pagination';
+import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
+import Pages from '../components/pagination';
+import { useEffect, useState } from 'react';
+import apiHost from '../services/api-host';
+import { useRouter } from 'next/router';
 
-interface IProps {
-  vendas: Venda[];
-  pagination: Pagination;
-}
+const Home: React.FC = () => {
+  const router = useRouter();
+  const page = router.query.page || 1;
+  const [vendas, setVendas] = useState<Venda[]>([]);
+  const [pagination, setPagination] = useState<Pagination>();
 
-const Home: React.FC<IProps> = ({ vendas, pagination }) => {
+  useEffect(() => {
+    apiHost
+      .get(`/venda?page=${page}`)
+      .then(res => {
+        setVendas(res.data.data);
+        setPagination(res.data.meta.pagination);
+      })
+      .catch((err: AxiosError) => {
+        toast.error('Erro ao carregar vendas!');
+      });
+  }, []);
+
   return (
     <Layout
       contentTitle="Vendas"
@@ -52,29 +65,10 @@ const Home: React.FC<IProps> = ({ vendas, pagination }) => {
             </tbody>
           </Table>
         </Row>
-        <Row>
-          <Pages pagination={pagination} />
-        </Row>
+        <Row>{pagination && <Pages pagination={pagination} />}</Row>
       </div>
     </Layout>
   );
-};
-
-export const getServerSideProps: GetServerSideProps<IProps> = async ctx => {
-  const page = ctx.query.page || 1;
-  const resp = await api
-    .get(`/venda?page=${page}`)
-    .then(res => res.data)
-    .catch((err: AxiosError) => {
-      toast.error("Erro ao carregar vendas!");
-    });
-  console.log(resp);
-  const vendas = resp?.data || [];
-  const pagination = resp?.meta.pagination || [];
-
-  return {
-    props: { vendas, pagination },
-  };
 };
 
 export default Home;

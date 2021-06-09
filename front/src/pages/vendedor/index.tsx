@@ -1,23 +1,36 @@
-import Head from "next/head";
-import { useRouter } from "next/router";
-import Layout from "../../components/layout";
-import { Table, Row, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
-import * as Icon from "react-bootstrap-icons";
-import api from "../../services/api";
-import { Vendedor } from "../../interfaces/vendedor";
-import { GetServerSideProps } from "next";
-import { AxiosError } from "axios";
-import { toast } from "react-toastify";
-import Link from "next/link";
-import { Pagination } from "../../interfaces/pagination";
-import Pages from "../../components/pagination";
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import Layout from '../../components/layout';
+import { Table, Row, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import * as Icon from 'react-bootstrap-icons';
+import api from '../../services/api';
+import { Vendedor } from '../../interfaces/vendedor';
+import { GetServerSideProps } from 'next';
+import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
+import Link from 'next/link';
+import { Pagination } from '../../interfaces/pagination';
+import Pages from '../../components/pagination';
+import { useEffect, useState } from 'react';
+import apiHost from '../../services/api-host';
 
-interface IProps {
-  vendedores: Vendedor[];
-  pagination: Pagination;
-}
-const Vendedores: React.FC<IProps> = ({ vendedores, pagination }) => {
+const Vendedores: React.FC = () => {
   const router = useRouter();
+  const page = router.query.page || 1;
+  const [vendedores, setVendedores] = useState<Vendedor[]>([]);
+  const [pagination, setPagination] = useState<Pagination>();
+
+  useEffect(() => {
+    apiHost
+      .get(`/vendedor?page=${page}`)
+      .then(res => {
+        setVendedores(res.data.data);
+        setPagination(res.data.meta.pagination);
+      })
+      .catch((err: AxiosError) => {
+        toast.error('Erro ao carregar vendas!');
+      });
+  }, []);
 
   return (
     <Layout
@@ -36,7 +49,7 @@ const Vendedores: React.FC<IProps> = ({ vendedores, pagination }) => {
                 <th>#</th>
                 <th>Nome</th>
                 <th>Email</th>
-                <th style={{ width: "10%" }}></th>
+                <th style={{ width: '10%' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -46,12 +59,12 @@ const Vendedores: React.FC<IProps> = ({ vendedores, pagination }) => {
                     <td>{vendedor.id}</td>
                     <td>{vendedor.nome}</td>
                     <td>{vendedor.email}</td>
-                    <td style={{ textAlign: "center" }}>
+                    <td style={{ textAlign: 'center' }}>
                       <Link href={`/vendedor/edit/${vendedor.id}`}>
                         <Button>
                           <Icon.Pencil />
                         </Button>
-                      </Link>{" "}
+                      </Link>{' '}
                       <OverlayTrigger
                         key={vendedor.id}
                         placement="bottom"
@@ -74,30 +87,10 @@ const Vendedores: React.FC<IProps> = ({ vendedores, pagination }) => {
             </tbody>
           </Table>
         </Row>
-        <Row>
-          <Pages pagination={pagination} />
-        </Row>
+        <Row>{pagination && <Pages pagination={pagination} />}</Row>
       </div>
     </Layout>
   );
-};
-
-export const getServerSideProps: GetServerSideProps<IProps> = async ctx => {
-  const page = ctx.query.page || 1;
-  const resp = await api
-    .get(`/vendedor?page=${page}`)
-    .then(res => res.data)
-    .catch((err: AxiosError) => {
-      console.log(`aqui${err}`);
-      toast.error("Erro ao carregar vendedores!");
-    });
-
-  const vendedores = resp.data || [];
-  const pagination = resp.data.meta?.pagination || [];
-
-  return {
-    props: { vendedores, pagination },
-  };
 };
 
 export default Vendedores;

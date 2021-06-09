@@ -1,20 +1,37 @@
-import Head from "next/head";
-import Layout from "../../components/layout";
-import { Table, Row } from "react-bootstrap";
-import api from "../../services/api";
-import { Venda } from "../../interfaces/venda";
-import { GetServerSideProps } from "next";
-import { AxiosError } from "axios";
-import { toast } from "react-toastify";
-import { Pagination } from "../../interfaces/pagination";
-import Pages from "../../components/pagination";
+import Head from 'next/head';
+import Layout from '../../components/layout';
+import { Table, Row } from 'react-bootstrap';
+import { Venda } from '../../interfaces/venda';
+import { GetServerSideProps } from 'next';
+import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
+import { Pagination } from '../../interfaces/pagination';
+import Pages from '../../components/pagination';
+import { useEffect, useState } from 'react';
+import apiHost from '../../services/api-host';
+import { useRouter } from 'next/router';
 
 interface IProps {
-  vendas: Venda[];
   vendedor: any;
-  pagination: Pagination;
 }
-const Vendas: React.FC<IProps> = ({ vendas, vendedor, pagination }) => {
+const Vendas: React.FC<IProps> = ({ vendedor }) => {
+  const router = useRouter();
+  const page = router.query.page || 1;
+  const [vendas, setVendas] = useState<Venda[]>([]);
+  const [pagination, setPagination] = useState<Pagination>();
+
+  useEffect(() => {
+    apiHost
+      .get(`/venda?page=${page}`)
+      .then(res => {
+        setVendas(res.data.data);
+        setPagination(res.data.meta.pagination);
+      })
+      .catch((err: AxiosError) => {
+        toast.error('Erro ao carregar vendas!');
+      });
+  }, []);
+
   return (
     <Layout
       contentTitle="Vendas"
@@ -53,7 +70,7 @@ const Vendas: React.FC<IProps> = ({ vendas, vendedor, pagination }) => {
           </Table>
         </Row>
         <Row>
-          <Pages pagination={pagination} />
+          <Row>{pagination && <Pages pagination={pagination} />}</Row>
         </Row>
       </div>
     </Layout>
@@ -62,19 +79,8 @@ const Vendas: React.FC<IProps> = ({ vendas, vendedor, pagination }) => {
 
 export const getServerSideProps: GetServerSideProps<IProps> = async ctx => {
   const vendedor = ctx.query.id;
-  const page = ctx.query.page || 1;
-  const resp = await api
-    .get(`${process.env.API_URL}/venda/${vendedor}/lista?page=${page}`)
-    .then(res => res.data)
-    .catch((err: AxiosError) => {
-      toast.error("Erro ao carregar vendas!");
-    });
-
-  const vendas = resp.data;
-  const pagination = resp.meta.pagination;
-
   return {
-    props: { vendas, vendedor, pagination },
+    props: { vendedor },
   };
 };
 

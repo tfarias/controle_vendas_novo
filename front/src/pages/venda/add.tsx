@@ -1,7 +1,7 @@
-import Head from "next/head";
-import Layout from "../../components/layout";
-import { useRouter } from "next/router";
-import FormVenda from "../../components/form_venda";
+import Head from 'next/head';
+import Layout from '../../components/layout';
+import { useRouter } from 'next/router';
+import FormVenda from '../../components/form_venda';
 
 const VendedorCreate: React.FC = () => {
   const router = useRouter();
