@@ -7,7 +7,6 @@ services:
       - ./api:/var/www
     networks:
       - network_tray
-      - network_tray_web
 
   tray_server:
     build: ./api/.docker/nginx
@@ -20,7 +19,6 @@ services:
       - tray_api
     networks:
       - network_tray
-      - network_tray_web
 
   tray_db:
     image: mysql:5.7.22
@@ -53,12 +51,10 @@ services:
     depends_on:
       - tray_api
     networks:
-      - network_tray_web
+      - network_tray
 
 networks:
   network_tray:
-    driver: bridge
-  network_tray_web:
     driver: bridge
 
 volumes:
