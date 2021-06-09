@@ -19,8 +19,7 @@ RUN chown -R www-data:www-data /var/www
 RUN chmod 777 $(pwd)
 RUN composer install
 RUN chmod -R 777 storage
-RUN chmod -R 775 storage
-RUN chmod -R 775 bootstrap
+RUN chmod -R 777 bootstrap
 RUN php artisan config:cache
 RUN php artisan config:clear
 # Expose port 9000 and start php-fpm server
